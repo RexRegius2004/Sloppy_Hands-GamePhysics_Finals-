@@ -1,25 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro; 
+using TMPro;
 
 public class Customer : MonoBehaviour
 {
     public string orderTag; 
-    public Transform plateSpawn; 
-    public float eatingDuration;
+    public Transform plateTransform;
+    public float eatingDuration; 
 
     public TMP_Text customerStatusText; 
 
     private bool isEating = false;
 
+    public AudioClip pop; // Drag your sound effect here
+    private AudioSource audioSource;
     private void Start()
     {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.clip = pop;
+        audioSource.volume = 0.2f;
+
         if (!isEating)
         {
             OrderNewPlate();
         }
 
+        customerStatusText.color = Color.green;
         UpdateUI();
     }
 
@@ -27,23 +34,25 @@ public class Customer : MonoBehaviour
     {
         if (isEating) return;
 
-        if (other.CompareTag(orderTag))
+        if (other.CompareTag(orderTag)) 
         {
             PlateBalance plate = other.GetComponent<PlateBalance>();
             Rigidbody plateRigidbody = other.GetComponent<Rigidbody>();
             GameUI.Instance.AddScore(10);
 
+            if (plate != null && plate.IsHeld())
+            {
+                plate.ServePlate();
+            }
 
             if (plateRigidbody != null)
             {
-                // Place the plate and start eating
                 isEating = true;
                 plateRigidbody.isKinematic = true;
                 plateRigidbody.useGravity = false;
-                plateRigidbody.MovePosition(plateSpawn.position);
-                plateRigidbody.MoveRotation(plateSpawn.rotation);
+                plateRigidbody.MovePosition(plateTransform.position);
+                plateRigidbody.MoveRotation(plateTransform.rotation);
 
-                customerStatusText.color = Color.red;
                 StartCoroutine(EatFood(other.gameObject));
             }
         }
@@ -51,32 +60,31 @@ public class Customer : MonoBehaviour
 
     private IEnumerator EatFood(GameObject plate)
     {
-        
+        customerStatusText.color = Color.red;
         eatingDuration = Random.Range(15f, 25f);
         UpdateUI();
         Debug.Log("Customer is eating...");
 
-        // Simulate eating time
         yield return new WaitForSeconds(eatingDuration);
 
         Debug.Log("Customer finished eating!");
-        Destroy(plate); // Remove the plate after eating
-        OrderNewPlate(); // Trigger a new order
+        Destroy(plate); 
+        OrderNewPlate(); 
 
         isEating = false;
-        
-        UpdateUI(); // Update the status UI to show the customer is not eating
+        customerStatusText.color = Color.green;
+        UpdateUI();
     }
 
     private void OrderNewPlate()
     {
-        customerStatusText.color = Color.green;
-        // Randomly assign a new desired plate tag
+       
+        audioSource.PlayOneShot(pop);
         string[] possibleTags = { "PanWaf", "EggnBac", "Burgy" };
         orderTag = possibleTags[Random.Range(0, possibleTags.Length)];
 
         Debug.Log($"{transform.name} now wants: {orderTag}");
-        UpdateUI(); // Update the desired plate UI
+        UpdateUI();
     }
 
     private void UpdateUI()

@@ -1,69 +1,78 @@
 using UnityEngine;
-using UnityEngine.UI; // Required for Text UI
+using UnityEngine.UI; 
 using System.Collections;
 using TMPro;
 
 public class Counter : MonoBehaviour
 {
-    public GameObject platePrefab; // Prefab for the plate
-    public Transform spawnPoint; // Position where the plate spawns
-    public float cookingTime; // Time it takes to prepare a new plate
-    public float raycastDistance = 6f; // Distance for the raycast to check for the plate
-    public LayerMask plateLayer; // Layer for the plates
-    public TMP_Text statusText; // UI text to display the status
+    public GameObject platePrefab; 
+    public Transform spawnPoint;
+    public float cookingTime;
+    public float raycastDistance = 6f;
+    public LayerMask plateLayer;
+    public TMP_Text statusText;
+    private bool isCooking = false;
 
-    private bool isCooking = false; // Flag to prevent multiple spawns
+    public AudioClip cooking;
+    public AudioClip ding;
+    private AudioSource Ding;
+    private AudioSource Cooking;
+
 
     private void Start()
     {
-        UpdateStatusText("Ready!", Color.green); // Set initial status to ready
+        Ding = gameObject.AddComponent<AudioSource>();
+        Cooking = gameObject.AddComponent<AudioSource>();
+        Cooking.clip = cooking;
+        Ding.clip = ding;
+        Cooking.loop = true;
+        Cooking.volume = 0.5f;
+        Ding.volume = 0.5f;
+
+        UpdateStatusText("Ready!", Color.green);
     }
 
     private void Update()
     {
-        IsPlatePresent();
-        // Check if there is no plate at the spawn point using a raycast
-        if (!isCooking && !IsPlatePresent())
+        PlateRaycast();
+        if (!isCooking && !PlateRaycast())
         {
-            StartCoroutine(SpawnPlateAfterDelay());
+            StartCoroutine(CookFood());
         }
     }
 
-    private bool IsPlatePresent()
+    private bool PlateRaycast()
     {
-        // Perform a raycast to check for the presence of a plate in the upward direction
+        Vector3 rayOrigin = spawnPoint.position + Vector3.down * 0.1f;
         RaycastHit hit;
-        if (Physics.Raycast(spawnPoint.position, Vector3.up, out hit, raycastDistance, plateLayer))
+        if (Physics.Raycast(rayOrigin, Vector3.up, out hit, raycastDistance, plateLayer))
         {
-            Debug.DrawRay(spawnPoint.position, Vector3.up * raycastDistance, Color.green);
+            Debug.DrawRay(rayOrigin, Vector3.up * raycastDistance, Color.green);
             return true;
         }
 
-        Debug.DrawRay(spawnPoint.position, Vector3.up * raycastDistance, Color.red);
+        Debug.DrawRay(rayOrigin, Vector3.up * raycastDistance, Color.red);
         return false;
     }
 
-    private IEnumerator SpawnPlateAfterDelay()
+
+    private IEnumerator CookFood()
     {
+        Cooking.Play();
         isCooking = true;
         cookingTime = Random.Range(10f, 15f);
-        UpdateStatusText("Cooking...", Color.red); // Update status to cooking
+        UpdateStatusText("Cooking...", Color.red);
         Debug.Log("Cooking a new plate...");
 
-        yield return new WaitForSeconds(cookingTime); // Simulate cooking time
+        yield return new WaitForSeconds(cookingTime);
 
-        if (platePrefab != null && spawnPoint != null)
-        {
-            Instantiate(platePrefab, spawnPoint.position, spawnPoint.rotation);
-            Debug.Log("New plate spawned at the counter.");
-        }
-        else
-        {
-            Debug.LogWarning("Plate prefab or spawn point not set.");
-        }
-
+        Instantiate(platePrefab, spawnPoint.position, spawnPoint.rotation);
+        Debug.Log("New plate spawned at the counter.");
+       
         isCooking = false;
-        UpdateStatusText("Ready!", Color.green); // Update status to ready
+        Cooking.Pause();
+        Ding.Play();
+        UpdateStatusText("Ready!", Color.green);
     }
 
     private void UpdateStatusText(string message, Color color)

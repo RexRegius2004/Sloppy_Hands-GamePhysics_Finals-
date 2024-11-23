@@ -9,6 +9,7 @@ TagManager:
   - PanWaf
   - EggnBac
   - Burgy
+  - Floor
   layers:
   - Default
   - TransparentFX

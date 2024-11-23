@@ -114,12 +114,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 0}
   raycastDistance: 20
-  playerHandTransform: {fileID: 0}
+  playerHand: {fileID: 0}
   maxTiltAngle: 90
-  tiltBiasForce: 0.09
-  initialTiltStrength: 0.5
-  torqueStrength: 1
-  stabilityThreshold: 0.25
+  tiltDifficulty: 0.5
+  tiltInitial: 1
+  playerInputStrength: 1
+  stabilityLevel: 0.25
+  splat: {fileID: 8300000, guid: 00ea5544fe117b04486d44f351d3b592, type: 3}
+  plateFall: {fileID: 8300000, guid: 0c52686dffb741c4eaf3f440e453c5f5, type: 3}
 --- !u!54 &2340490786623235602
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -166,8 +168,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8917739, y: 0.089999996, z: 0.8917739}
-  m_Center: {x: 0, y: 0.044999998, z: 0}
+  m_Size: {x: 0.89177394, y: 0.2640278, z: 0.89177394}
+  m_Center: {x: 3.870616e-12, y: 0.1320085, z: -1.0731479e-11}
 --- !u!4 &691351567082519257 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b76e6b334d4a1c04c89040856c13a3e4, type: 3}
